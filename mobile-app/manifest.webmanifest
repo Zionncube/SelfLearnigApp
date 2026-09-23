@@ -1,0 +1,8 @@
+{
+  "name": "Self-Learning Journey",
+  "short_name": "Learning Journey",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#25375c"
+}

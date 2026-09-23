@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#25375c">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Self-Learning Journey</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow" id="subtitle">Notice · Try · Reflect · Grow</p>
+        <h1 id="app-title">My Self-Learning Journey</h1>
+      </div>
+      <button class="language-button" id="language-toggle" type="button">isiZulu</button>
+    </header>
+
+    <section id="content" class="content" aria-live="polite"></section>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button data-page="home" type="button">Home</button>
+      <button data-page="brain" type="button">Brain Lab</button>
+      <button data-page="observe" type="button">Observer</button>
+      <button data-page="growth" type="button">Journey</button>
+    </nav>
+  </main>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
