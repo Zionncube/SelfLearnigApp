@@ -2,7 +2,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.io.IOException;
 import java.time.LocalDate;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -98,10 +97,9 @@ public class SelfLearningFrame extends JFrame {
         addButton(buttons, t("Reflect & Learn", "Cabanga Futhi Ufunde"), GREEN, this::recordReflection);
         addButton(buttons, t("Gratitude", "Ukubonga"), YELLOW, this::recordGratitude);
         addButton(buttons, t("My Evidence Journey", "Uhambo Lwami Lobufakazi"), PINK, this::showGrowth);
-        addButton(buttons, t("Starting Check-In", "Ukuhlola Kokuqala"), BLUE, () -> completeEvaluation(true));
+        addButton(buttons, t("Understand Myself", "Ngiziqonde Njengomfundi"), BLUE, this::editProfile);
         addButton(buttons, t("Finish Check-In", "Ukuhlola Kokugcina"), GREEN, () -> completeEvaluation(false));
         addButton(buttons, t("My Confidence Results", "Imiphumela Yami"), YELLOW, this::showEvaluationResults);
-        addButton(buttons, t("Teacher Summary", "Isifinyezo Sikathisha"), PINK, this::showTeacherSummary);
         addButton(buttons, t("English / isiZulu", "isiZulu / English"), BLUE, this::toggleLanguage);
         add(buttons, BorderLayout.SOUTH);
     }
@@ -297,28 +295,13 @@ public class SelfLearningFrame extends JFrame {
     private void showEvaluationResults() {
         EvaluationRecord evaluation = learner.getEvaluationRecord();
         if (evaluation == null || !evaluation.hasBeforeResponses()) {
-            display.setText("MY CONFIDENCE RESULTS\n\nStart with the Starting Check-In. Later, complete the Finish Check-In so you can compare your answers.");
+            display.setText("MY CONFIDENCE RESULTS\n\nStart with your self-check. Later, complete the after self-check so you can compare your answers.");
             return;
         }
-        String text = "MY CONFIDENCE RESULTS\n\nStarting check-in: " + format(evaluation.getBeforeAverage()) + " / 5\n";
-        if (evaluation.hasAfterResponses()) text += "Finish check-in: " + format(evaluation.getAfterAverage()) + " / 5\nChange: " + format(evaluation.getImprovement()) + " points\n\nA positive change can suggest that you feel more aware of the strategies that help you learn.";
-        else text += "\nComplete the Finish Check-In after using the app for a while to compare results.";
+        String text = "MY CONFIDENCE RESULTS\n\nStarting self-check: " + format(evaluation.getBeforeAverage()) + " / 5\n";
+        if (evaluation.hasAfterResponses()) text += "After self-check: " + format(evaluation.getAfterAverage()) + " / 5\nChange: " + format(evaluation.getImprovement()) + " points\n\nA positive change can suggest that you feel more aware of the strategies that help you learn.";
+        else text += "\nComplete the after self-check after using the app for a while to compare results.";
         display.setText(text);
-    }
-
-    private void showTeacherSummary() {
-        String text = "TEACHER / PARENT SUMMARY\n\nLearner: " + learner.getName() + " (age " + learner.getAge() + ")\n"
-            + "Observations: " + learner.getObservations().size() + "\nExperiments: " + learner.getExperiments().size() + "\nReflections: " + learner.getReflections().size() + "\nGratitude: " + learner.getGratitudeEntries().size() + "\n\n"
-            + "This is a basic progress summary. Discuss entries with the learner respectfully; the aim is support, not judgement.";
-        display.setText(text);
-        if (JOptionPane.showConfirmDialog(this, "Would you like to save this summary as a text report?", "Export report", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            try {
-                String path = ReportExporter.export(learner);
-                JOptionPane.showMessageDialog(this, "Report saved to:\n" + path, "Report saved", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException error) {
-                JOptionPane.showMessageDialog(this, "The report could not be saved.", "Save problem", JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 
     private String format(double number) { return String.format("%.2f", number); }

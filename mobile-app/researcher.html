@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Evidence Board</title>
+  <link rel="stylesheet" href="researcher.css">
+</head>
+<body>
+  <main class="board">
+    <header>
+      <div><p class="eyebrow">Private researcher view</p><h1>Learning evidence</h1></div>
+      <button id="sign-out" class="secondary hidden" type="button">Sign out</button>
+    </header>
+    <section id="login" class="panel">
+      <h2>Researcher sign in</h2>
+      <p>Only your Supabase account can open this board. Children never see this page.</p>
+      <form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary">Open evidence board</button></form>
+      <p id="login-error" class="error" role="alert"></p>
+    </section>
+    <section id="dashboard" class="hidden">
+      <div id="stats" class="stats"></div>
+      <section class="panel"><h2>Before and after averages</h2><p class="legend"><span class="before"></span> Before <span class="after"></span> After</p><div id="charts"></div></section>
+      <section class="panel"><div class="panel-heading"><h2>Anonymous participants</h2><button id="download-csv" class="secondary" type="button">Download CSV</button></div><div class="table-wrap"><table><thead><tr><th>Participant ID</th><th>Before total</th><th>After total</th><th>Before confidence</th><th>After confidence</th><th>Experiments</th><th>Reflections</th></tr></thead><tbody id="participants"></tbody></table></div></section>
+      <p id="board-error" class="error" role="alert"></p>
+    </section>
+  </main>
+  <script src="config.js"></script>
+  <script src="researcher.js"></script>
+</body>
+</html>

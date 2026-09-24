@@ -37,6 +37,13 @@ textarea { min-height: 85px; resize: vertical; }
 .secondary { width: 100%; background: white; color: var(--navy); border: 1px solid #aebdd4; border-radius: 12px; padding: 12px; margin-top: 10px; font-weight: bold; }
 .notice { background: var(--yellow); border-radius: 12px; padding: 12px; line-height: 1.45; }
 .stat { display: flex; justify-content: space-between; border-bottom: 1px solid #dce3ee; padding: 9px 0; }
+.chart-row { margin: 14px 0; }
+.chart-row > span { display: block; font-weight: bold; margin-bottom: 5px; }
+.bars { height: 14px; background: #e6ebf3; border-radius: 7px; overflow: hidden; position: relative; }
+.bars i, .bars b { display: block; height: 50%; position: absolute; left: 0; }
+.bars i { top: 0; background: var(--navy); }
+.bars b { bottom: 0; background: #72b4a0; }
+.chart-row small { color: var(--muted); }
 .entry { border-left: 4px solid #7aafdd; padding: 10px 12px; margin: 10px 0; background: #f7faff; white-space: pre-line; border-radius: 0 10px 10px 0; }
 .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 760px; width: 100%; background: white; border-top: 1px solid #d9e1ed; display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px; gap: 4px; }
 .bottom-nav button { background: white; border: 0; color: var(--navy); padding: 9px 3px; font-size: .76rem; font-weight: bold; }

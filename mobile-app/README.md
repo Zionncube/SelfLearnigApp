@@ -14,9 +14,9 @@ Vercel will give the project a public `vercel.app` link that learners can open o
 
 ## Evidence data
 
-The current version saves a learner's private entries on their own device using browser storage and allows a teacher/parent to download an evidence report.
+The current version begins with an Understand Myself foundation where the learner records interests, strengths, challenges, attention, feelings, learning conditions, and a question they want to investigate. It then gives reliable principles and turns them into observation, experimentation, and reflection. The learner's private entries stay on their device using browser storage, and they can download a personal evidence report. The report compares a four-question before/after measure (understanding, self-observation, strategy experimentation, and reflection), confidence from 1 to 5, and activity counts. The experiment asks the learner to compare their usual strategy with one different strategy. This is a self-awareness and learning-support tool, not a diagnostic tool.
 
-For a pilot across several children, do not collect names or sensitive journal text unless your school has consent and a privacy process. Use anonymous participant codes and collect only the evaluation answers and feature-use counts in a shared database. Vercel hosts the app; a database such as Supabase is needed to aggregate this data across phones.
+For a pilot across several children, do not collect names without school consent and a privacy process. The app uses an anonymous participant code: the child's name stays on the device, while the learner evidence is stored under the code. Vercel hosts the app; a database such as Supabase is needed to aggregate this data across phones.
 
 ## Connect Supabase tomorrow
 
@@ -27,4 +27,19 @@ For a pilot across several children, do not collect names or sensitive journal t
 5. Paste the Project URL and **anon public key** into it. Never use a service-role key in a browser app.
 6. Deploy `mobile-app` to Vercel.
 
-The app will sync only anonymous participant code, feature-use counts, language, and before/after check-in scores. It deliberately does not sync names or private journal entries.
+The app syncs the anonymous participant code, feature-use counts, language, scores, age, and learner evidence in `learner_data`. It deliberately excludes the child's name from the database. Run the updated schema so the `learner_data` JSON field exists.
+
+## View researcher evidence
+
+The learner sees only their own Journey chart. To see the pilot evidence as the researcher:
+
+1. Sign in to Supabase and open **Table Editor -> `pilot_evidence`**. Each row is one anonymous participant code; no learner name is stored.
+2. Open **SQL Editor** and run the updated `supabase-schema.sql` once. The `pilot_evidence_summary` view calculates the anonymous averages for the charts.
+3. Run `select * from public.pilot_evidence_summary;` to see the before/after averages and participant count.
+4. Use the before/after columns for chart 1. Use `experiments_count`, `reflections_count`, and the participant count for chart 2. The table can also be exported as CSV for a spreadsheet chart.
+
+Do not create a public SELECT policy. The browser only needs anonymous INSERT access; researcher reading should happen from the authenticated Supabase dashboard.
+
+## Private researcher board
+
+Open `researcher.html` from the deployed `mobile-app` site. Sign in with the Supabase account that belongs to you. The board shows the aggregate before/after charts, anonymous participant rows, and a CSV download. Children should only receive the normal app link, not the researcher board link.
