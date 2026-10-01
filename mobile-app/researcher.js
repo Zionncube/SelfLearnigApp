@@ -1,10 +1,11 @@
 const CONFIG = window.APP_CONFIG || {};
 const RESEARCHER_ZU = {
-  "Private researcher view": "Indawo eyimfihlo yomcwaningi", "Learning evidence": "Ubufakazi bokufunda", "Researcher sign in": "Ngena njengomcwaningi", "Only your Supabase account can open this board. Children never see this page.": "I-akhawunti yakho ye-Supabase kuphela engavula leli khasi. Abafundi abaliboni.", "Email": "I-imeyili", "Password": "Iphasiwedi", "Open evidence board": "Vula ibhodi lobufakazi", "Sign out": "Phuma", "Participants": "Abahlanganyeli", "Average experiments": "Isilinganiso sokuhlola amasu", "Average reflections": "Isilinganiso sokuzindla", "Before and after averages": "Izilinganiso zangaphambi nangemva", "Before": "Ngaphambi", "After": "Ngemva", "Understanding": "Ukuqonda", "Self-observation": "Ukuzibuka", "Strategy experimentation": "Ukuhlola isu", "Reflection": "Ukuzindla", "Confidence": "Ukuzethemba", "Anonymous participants": "Abahlanganyeli abangadalulwanga amagama", "Download CSV": "Landa i-CSV", "Participant ID": "I-ID yomhlanganyeli", "Before total": "Isamba sangaphambi", "After total": "Isamba sangemva", "Before confidence": "Ukuzethemba kwangaphambi", "After confidence": "Ukuzethemba kwangemva", "Experiments": "Ukuhlola amasu", "Reflections": "Ukuzindla", "Switch to isiZulu": "Shintshela esiZulwini", "Switch to English": "Shintshela esiNgisini"
+  "Private researcher view": "Indawo eyimfihlo yomcwaningi", "Learning evidence": "Ubufakazi bokufunda", "Researcher sign in": "Ngena njengomcwaningi", "Only your Supabase account can open this board. Children never see this page.": "I-akhawunti yakho ye-Supabase kuphela engavula leli khasi. Abafundi abaliboni.", "Email": "I-imeyili", "Password": "Iphasiwedi", "Open evidence board": "Vula ibhodi lobufakazi", "Sign out": "Phuma", "Participants": "Abahlanganyeli", "Average experiments": "Isilinganiso sokuhlola amasu", "Average reflections": "Isilinganiso sokuzindla", "Before and after averages": "Izilinganiso zangaphambi nangemva", "Before": "Ngaphambi", "After": "Ngemva", "Understanding": "Ukuqonda", "Self-observation": "Ukuzibuka", "Strategy experimentation": "Ukuhlola isu", "Reflection": "Ukuzindla", "Confidence": "Ukuzethemba", "Anonymous participants": "Abahlanganyeli abangadalulwanga amagama", "Download CSV": "Landa i-CSV", "Participant ID": "I-ID yomhlanganyeli", "Before total": "Isamba sangaphambi", "After total": "Isamba sangemva", "Before confidence": "Ukuzethemba kwangaphambi", "After confidence": "Ukuzethemba kwangemva", "Experiments": "Ukuhlola amasu", "Reflections": "Ukuzindla", "Switch to isiZulu": "Shintshela esiZulwini", "Switch to English": "Shintshela esiNgisini", "View simulated sample (10 participants)": "Buka idatha eyisibonelo (abahlanganyeli abayi-10)", "Back to researcher sign in": "Buyela ekungeneni komcwaningi", "SIMULATED DEMONSTRATION DATA — NOT REAL PARTICIPANT RESULTS.": "IDATHA EYISIBONELO — AKUYONA IMIPHUMELA YABAHLANGANYELI BANGEMPELA.", "Each participant's total learning-behaviour score and confidence increase by less than 50% from their own starting score.": "Isamba samaphuzu okuziphatha kokufunda nokuzethemba komhlanganyeli ngamunye kukhuphuka ngaphansi kuka-50% uma kuqhathaniswa namaphuzu akhe okuqala."
 };
 let boardLanguage = localStorage.getItem("researcherBoardLanguage") || "en";
 let accessToken = "";
 let rows = [];
+let showingDemo = false;
 const login = document.getElementById("login");
 const dashboard = document.getElementById("dashboard");
 const errorBox = document.getElementById("login-error");
@@ -26,7 +27,45 @@ function renderBoard(summary) {
   document.getElementById("stats").innerHTML = `<div class="stat"><span>${rt("Participants")}</span><strong>${summary.participants || 0}</strong></div><div class="stat"><span>${rt("Average experiments")}</span><strong>${number(summary.average_experiments)}</strong></div><div class="stat"><span>${rt("Average reflections")}</span><strong>${number(summary.average_reflections)}</strong></div>`;
   document.getElementById("charts").innerHTML = chart("Understanding", summary.before_understanding, summary.after_understanding, 2) + chart("Self-observation", summary.before_self_observation, summary.after_self_observation, 2) + chart("Strategy experimentation", summary.before_strategy_experimentation, summary.after_strategy_experimentation, 2) + chart("Reflection", summary.before_reflection, summary.after_reflection, 2) + chart("Confidence", summary.before_confidence, summary.after_confidence, 5);
   document.getElementById("participants").innerHTML = rows.map(row => `<tr><td>${row.participant_code}</td><td>${number(row.before_total)}</td><td>${number(row.after_total)}</td><td>${number(row.before_checkin)}</td><td>${number(row.after_checkin)}</td><td>${row.experiments_count || 0}</td><td>${row.reflections_count || 0}</td></tr>`).join("");
+  document.getElementById("demo-banner").classList.toggle("hidden", !showingDemo);
+  document.getElementById("exit-demo").classList.toggle("hidden", !showingDemo);
+  document.getElementById("sign-out").classList.toggle("hidden", showingDemo);
   localizeBoard();
+}
+function buildDemoRows() {
+  const scores = [
+    [[1,1,1,0],[1,2,1,0],3,4,2,3],
+    [[1,1,0,1],[1,1,0,2],3,4,1,2],
+    [[1,1,1,1],[1,1,2,1],3,4,2,2],
+    [[2,1,1,1],[2,1,1,2],3,4,3,3],
+    [[1,0,1,1],[1,0,1,2],3,4,1,1],
+    [[1,2,1,1],[1,2,1,2],4,5,2,2],
+    [[0,1,1,1],[0,1,1,2],3,4,1,2],
+    [[1,1,0,1],[1,1,1,1],3,4,2,1],
+    [[2,1,1,0],[2,1,2,0],3,4,1,2],
+    [[0,0,1,2],[0,0,2,2],3,4,2,2]
+  ];
+  rows = scores.map(([beforeScores, afterScores, beforeConfidence, afterConfidence, experiments, reflections], index) => {
+    const total = values => values.reduce((sum, value) => sum + value, 0);
+    const record = (values, confidence) => ({ understanding: values[0], selfObservation: values[1], strategyExperimentation: values[2], reflection: values[3], confidence, total: total(values) });
+    return { participant_code: `DEMO-${String(index + 1).padStart(2, "0")}`, before_total: total(beforeScores), after_total: total(afterScores), before_checkin: beforeConfidence, after_checkin: afterConfidence, experiments_count: experiments, reflections_count: reflections, learner_data: { evaluation: { pre: record(beforeScores, beforeConfidence), post: record(afterScores, afterConfidence) } } };
+  });
+  const average = (getter) => rows.reduce((sum, row) => sum + getter(row), 0) / rows.length;
+  return {
+    participants: rows.length,
+    before_understanding: average(row => row.learner_data.evaluation.pre.understanding),
+    after_understanding: average(row => row.learner_data.evaluation.post.understanding),
+    before_self_observation: average(row => row.learner_data.evaluation.pre.selfObservation),
+    after_self_observation: average(row => row.learner_data.evaluation.post.selfObservation),
+    before_strategy_experimentation: average(row => row.learner_data.evaluation.pre.strategyExperimentation),
+    after_strategy_experimentation: average(row => row.learner_data.evaluation.post.strategyExperimentation),
+    before_reflection: average(row => row.learner_data.evaluation.pre.reflection),
+    after_reflection: average(row => row.learner_data.evaluation.post.reflection),
+    before_confidence: average(row => row.before_checkin),
+    after_confidence: average(row => row.after_checkin),
+    average_experiments: average(row => row.experiments_count),
+    average_reflections: average(row => row.reflections_count)
+  };
 }
 async function loadBoard() {
   const summary = await api("/rest/v1/pilot_evidence_summary?select=*");
@@ -35,7 +74,9 @@ async function loadBoard() {
   renderBoard(summary[0] || {});
 }
 document.getElementById("login-form").onsubmit = async event => { event.preventDefault(); errorBox.textContent = ""; const form = Object.fromEntries(new FormData(event.currentTarget)); try { const response = await fetch(`${CONFIG.supabaseUrl}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" }, body: JSON.stringify({ email: form.email, password: form.password }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error_description || body.msg || "Sign-in failed."); accessToken = body.access_token; await loadBoard(); login.classList.add("hidden"); dashboard.classList.remove("hidden"); document.getElementById("sign-out").classList.remove("hidden"); } catch (error) { errorBox.textContent = signInError(error); } };
+document.getElementById("show-demo").onclick = () => { showingDemo = true; login.classList.add("hidden"); dashboard.classList.remove("hidden"); renderBoard(buildDemoRows()); };
+document.getElementById("exit-demo").onclick = () => { showingDemo = false; dashboard.classList.add("hidden"); login.classList.remove("hidden"); rows = []; };
 document.getElementById("sign-out").onclick = () => { accessToken = ""; dashboard.classList.add("hidden"); login.classList.remove("hidden"); document.getElementById("sign-out").classList.add("hidden"); };
-document.getElementById("download-csv").onclick = () => { const header = boardLanguage === "zu" ? ["ikhodi_yomhlanganyeli", "isamba_sangaphambi", "isamba_sangemva", "ukuzethemba_kwangaphambi", "ukuzethemba_kwangemva", "ukuhlola_amasu", "ukuzindla"] : ["participant_code", "before_total", "after_total", "before_confidence", "after_confidence", "experiments", "reflections"]; const lines = [header, ...rows.map(row => [row.participant_code, row.before_total ?? "", row.after_total ?? "", row.before_checkin ?? "", row.after_checkin ?? "", row.experiments_count || 0, row.reflections_count || 0])].map(line => line.map(value => `"${String(value).replaceAll('"', '""')}"`).join(",")); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" })); link.download = boardLanguage === "zu" ? "ubufakazi_bokufunda_obungadaluli_amagama.csv" : "anonymous-learning-evidence.csv"; link.click(); URL.revokeObjectURL(link.href); };
+document.getElementById("download-csv").onclick = () => { const header = boardLanguage === "zu" ? ["ikhodi_yomhlanganyeli", "isamba_sangaphambi", "isamba_sangemva", "ukuzethemba_kwangaphambi", "ukuzethemba_kwangemva", "ukuhlola_amasu", "ukuzindla"] : ["participant_code", "before_total", "after_total", "before_confidence", "after_confidence", "experiments", "reflections"]; const demoNotice = boardLanguage === "zu" ? "IDATHA EYISIBONELO KUPHELA - AKUYONA IMIPHUMELA YANGEMPELA" : "SIMULATED DEMO DATA ONLY - NOT REAL RESULTS"; const records = rows.map(row => [row.participant_code, row.before_total ?? "", row.after_total ?? "", row.before_checkin ?? "", row.after_checkin ?? "", row.experiments_count || 0, row.reflections_count || 0]); const lines = showingDemo ? [[demoNotice, "", "", "", "", "", ""], header, ...records] : [header, ...records]; const csv = lines.map(line => line.map(value => `"${String(value).replaceAll('"', '""')}"`).join(",")); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv.join("\n")], { type: "text/csv" })); link.download = showingDemo ? (boardLanguage === "zu" ? "idatha_eyisibonelo_yokufunda.csv" : "simulated-learning-demo.csv") : (boardLanguage === "zu" ? "ubufakazi_bokufunda_obungadaluli_amagama.csv" : "anonymous-learning-evidence.csv"); link.click(); URL.revokeObjectURL(link.href); };
 document.getElementById("language-toggle").onclick = () => { boardLanguage = boardLanguage === "en" ? "zu" : "en"; localStorage.setItem("researcherBoardLanguage", boardLanguage); location.reload(); };
 localizeBoard();

@@ -7,8 +7,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 h1, h2 { margin: 0 0 8px; } h1 { color: #25375c; } h2 { font-size: 1.15rem; }
 .eyebrow { margin: 0 0 4px; color: #5c6980; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
 .panel { background: white; border: 1px solid #d7e0eb; border-radius: 10px; padding: 20px; margin-bottom: 18px; box-shadow: 0 3px 14px #24375c12; }
+.demo-banner { background: #fff0bd; border: 2px solid #9a6d00; color: #503800; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; font-weight: bold; line-height: 1.45; }
 .hidden { display: none !important; }
 label { display: block; font-weight: bold; margin: 12px 0; } input { display: block; width: 100%; padding: 11px; margin-top: 6px; border: 1px solid #b9c6d9; border-radius: 6px; }
+form + #show-demo { width: 100%; margin-top: 10px; }
 button { cursor: pointer; border-radius: 6px; padding: 11px 15px; font-weight: bold; border: 1px solid #aebdd4; } .primary { color: white; background: #25375c; border: 0; } .secondary { color: #25375c; background: white; }
 .error { color: #a32929; min-height: 1.2em; } .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; } .stat { background: #fff8df; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; gap: 12px; }
 .legend { color: #5c6980; } .legend span { display: inline-block; width: 12px; height: 12px; margin: 0 4px 0 12px; border-radius: 2px; } .legend .before { background: #25375c; } .legend .after { background: #72b4a0; }

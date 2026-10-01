@@ -6,7 +6,9 @@ data.selectedPrinciple = data.selectedPrinciple || null;
 if (!data.participantCode) data.participantCode = "P-" + (crypto.randomUUID ? crypto.randomUUID().slice(0, 8).toUpperCase() : Math.random().toString(36).slice(2, 10).toUpperCase());
 if (typeof data.evaluation.pre === "number") data.evaluation.pre = { confidence: data.evaluation.pre, total: null, understanding: null, selfObservation: null, strategyExperimentation: null, reflection: null };
 if (typeof data.evaluation.post === "number") data.evaluation.post = { confidence: data.evaluation.post, total: null, understanding: null, selfObservation: null, strategyExperimentation: null, reflection: null };
-let page = "home";
+let route = data.route || { page: "home" };
+let routeHistory = Array.isArray(data.routeHistory) && data.routeHistory.length ? data.routeHistory : [route];
+data.drafts = data.drafts || {};
 let activeLessonSpeechText = "";
 
 const words = {
@@ -22,7 +24,8 @@ const topics = [
 ];
 
 function t(key) { return tr(words[data.language]?.[key] || words.en[key] || key); }
-function save() { localStorage.setItem(STORE, JSON.stringify(data)); void syncEvidence(); }
+function persistLocal() { localStorage.setItem(STORE, JSON.stringify(data)); }
+function save() { persistLocal(); void syncEvidence(); }
 
 async function syncEvidence() {
   if (!CLOUD.supabaseUrl || !CLOUD.supabaseAnonKey || !navigator.onLine) return;
@@ -72,7 +75,27 @@ async function syncEvidence() {
 }
 function esc(value = "") { return String(value).replace(/[&<>'"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[c]); }
 function entry(text) { let displayText = text; if (data.language === "zu") { displayText = displayText.replace(/^(\d{1,2}\/\d{1,2}\/\d{4}: )?(Scene|Signals|Context|Next|Usual|Different strategy|Helped more|Insight|Result|Challenge|Strategy|Reflection) —/gm, (match, date, label) => `${date || ""}${tr(label)} —`); } return `<div class="entry">${esc(displayText)}</div>`; }
-function setPage(next) { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); page = next; render(); }
+function setRoute(nextRoute) {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  route = nextRoute;
+  routeHistory.push(route);
+  data.route = route;
+  data.routeHistory = routeHistory;
+  persistLocal();
+  render();
+}
+
+function setPage(next) { setRoute({ page: next }); }
+
+function goBack() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if (routeHistory.length > 1) routeHistory.pop();
+  route = routeHistory[routeHistory.length - 1] || { page: "home" };
+  data.route = route;
+  data.routeHistory = routeHistory;
+  persistLocal();
+  render();
+}
 
 function render() {
   const content = document.getElementById("content");
@@ -82,9 +105,9 @@ function render() {
   document.getElementById("subtitle").textContent = tr("Notice · Try · Reflect · Grow");
   document.title = tr("My Self-Learning Journey");
   document.querySelector(".bottom-nav").setAttribute("aria-label", tr("Main navigation"));
-  document.querySelectorAll(".bottom-nav button").forEach(button => { button.textContent = t(button.dataset.page); button.classList.toggle("active", button.dataset.page === page); });
+  document.querySelectorAll(".bottom-nav button").forEach(button => { button.textContent = t(button.dataset.page); button.classList.toggle("active", button.dataset.page === route.page || ((route.page === "category" || route.page === "principle") && button.dataset.page === "brain")); });
   const views = { home, brain, observe, experiment, reflect, gratitude, growth, register, knowmyself, checkin };
-  content.innerHTML = views[page]();
+  content.innerHTML = route.page === "category" ? categoryView(route.category) : route.page === "principle" ? principleView(route.category, route.principle) : views[route.page]();
   localizeVisibleText(content);
   bindForms();
 }
@@ -127,7 +150,7 @@ function home() {
   </div>`;
 }
 function card(target, color, title, description) { return `<button class="card ${color}" data-go="${target}" type="button">${esc(title)}<span>${esc(description)}</span></button>`; }
-function back() { return `<button class="back" data-go="home" type="button">${t("back")}</button>`; }
+function back() { return `<button class="back" data-back type="button">${t("back")}</button>`; }
 
 function brain() { return `${back()}<section class="panel"><h2>${t("brain")}</h2><p>${tr("Reliable information gives you possibilities, not labels. Choose a category, learn one idea in simple words, then observe yourself and try it.")}</p>${PRINCIPLE_CATEGORIES.map((_, i) => { const category = localizedCategory(i); return `<button class="topic-button" data-category="${i}" type="button"><strong>${esc(category.name)}</strong><br><small>${esc(category.description)}</small></button>`; }).join("")}</section>`; }
 function categoryView(index) { const category = localizedCategory(index); return `${back()}<section class="panel"><h2>${esc(category.name)}</h2><p>${esc(category.description)}</p>${category.principles.map((title, i) => `<button class="topic-button" data-principle="${i}" data-category="${index}" type="button">${esc(title)}</button>`).join("")}</section>`; }
@@ -207,10 +230,21 @@ function downloadLocalizedReport() {
 
 function bindForms() {
   document.querySelectorAll("[data-go]").forEach(x => x.onclick = () => setPage(x.dataset.go));
-  document.querySelectorAll("[data-category]").forEach(x => x.onclick = () => { document.getElementById("content").innerHTML = categoryView(Number(x.dataset.category)); bindForms(); });
-  document.querySelectorAll("[data-principle]").forEach(x => x.onclick = () => { const categoryIndex = Number(x.dataset.category); const principleIndex = Number(x.dataset.principle); data.selectedPrinciple = PRINCIPLE_CATEGORIES[categoryIndex].principles[principleIndex]; document.getElementById("content").innerHTML = principleView(categoryIndex, principleIndex); bindForms(); });
+  document.querySelectorAll("[data-back]").forEach(x => x.onclick = goBack);
+  document.querySelectorAll("[data-category]").forEach(x => x.onclick = () => setRoute({ page: "category", category: Number(x.dataset.category) }));
+  document.querySelectorAll("[data-principle]").forEach(x => { x.onclick = () => { const category = Number(x.dataset.category); const principle = Number(x.dataset.principle); data.selectedPrinciple = PRINCIPLE_CATEGORIES[category].principles[principle]; setRoute({ page: "principle", category, principle }); }; });
   document.querySelectorAll("[data-speech]").forEach(button => button.onclick = () => handleLessonSpeech(button.dataset.speech));
   const form = document.querySelector("form"); if (!form) { const download = document.getElementById("download-report"); if (download) download.onclick = downloadLocalizedReport; return; }
+  const savedDraft = data.drafts[form.id];
+  const savedCheckin = form.id === "checkin-form" ? data.evaluation[form.dataset.phase] : null;
+  const values = savedDraft || (savedCheckin ? { q0: savedCheckin.understanding, q1: savedCheckin.selfObservation, q2: savedCheckin.strategyExperimentation, q3: savedCheckin.reflection, confidence: savedCheckin.confidence } : null);
+  if (values) Array.from(form.elements).forEach(control => { if (control.name && values[control.name] !== undefined) control.value = values[control.name]; });
+  const saveDraft = () => {
+    data.drafts[form.id] = Object.fromEntries(new FormData(form));
+    persistLocal();
+  };
+  form.addEventListener("input", saveDraft);
+  form.addEventListener("change", saveDraft);
   form.onsubmit = event => { event.preventDefault(); const f = Object.fromEntries(new FormData(form)); const now = new Date().toLocaleDateString();
     if (form.id === "register-form") data.profile = { name: f.name, age: f.age, registered: true };
     if (form.id === "knowmyself-form") data.selfUnderstanding = { ...f, completed: true, date: new Date().toISOString() };
@@ -221,6 +255,7 @@ function bindForms() {
     if (form.id === "gratitude-form") data.gratitude.push({ ...f, summary: `${now}: ${f.message}` });
     if (form.id === "checkin-form") { const phase = form.dataset.phase; const record = { understanding: Number(f.q0), selfObservation: Number(f.q1), strategyExperimentation: Number(f.q2), reflection: Number(f.q3), confidence: Number(f.confidence), total: Number(f.q0) + Number(f.q1) + Number(f.q2) + Number(f.q3), date: new Date().toISOString() }; data.evaluation[phase] = record; }
     if (form.id === "experiment-form") data.selectedPrinciple = null;
+    delete data.drafts[form.id];
     save(); setPage(form.id === "register-form" ? "knowmyself" : form.id === "knowmyself-form" ? "checkin" : "growth");
   };
 }

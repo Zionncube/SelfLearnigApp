@@ -16,9 +16,12 @@
       <h2>Researcher sign in</h2>
       <p>Only your Supabase account can open this board. Children never see this page.</p>
       <form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary">Open evidence board</button></form>
+      <button id="show-demo" class="secondary" type="button">View simulated sample (10 participants)</button>
       <p id="login-error" class="error" role="alert"></p>
     </section>
     <section id="dashboard" class="hidden">
+      <div id="demo-banner" class="demo-banner hidden" role="status">SIMULATED DEMONSTRATION DATA — NOT REAL PARTICIPANT RESULTS. Each participant's total learning-behaviour score and confidence increase by less than 50% from their own starting score.</div>
+      <button id="exit-demo" class="secondary hidden" type="button">Back to researcher sign in</button>
       <div id="stats" class="stats"></div>
       <section class="panel"><h2>Before and after averages</h2><p class="legend"><span class="before"></span> Before <span class="after"></span> After</p><div id="charts"></div></section>
       <section class="panel"><div class="panel-heading"><h2>Anonymous participants</h2><button id="download-csv" class="secondary" type="button">Download CSV</button></div><div class="table-wrap"><table><thead><tr><th>Participant ID</th><th>Before total</th><th>After total</th><th>Before confidence</th><th>After confidence</th><th>Experiments</th><th>Reflections</th></tr></thead><tbody id="participants"></tbody></table></div></section>
